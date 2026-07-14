@@ -399,7 +399,16 @@ function buildExamQuestion(body: z.infer<typeof examQuestionSchema>, index = 0):
 }
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, store: getStore().mode });
+  res.json({
+    ok: true,
+    store: getStore().mode,
+    env: {
+      CRM_STORE: process.env.CRM_STORE || "(unset)",
+      has_DATABASE_URL: Boolean(process.env.DATABASE_URL),
+      has_MYSQL_URL: Boolean(process.env.MYSQL_URL),
+      NODE_ENV: process.env.NODE_ENV || "(unset)",
+    }
+  });
 });
 
 const loginSchema = z.object({
