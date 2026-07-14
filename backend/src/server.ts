@@ -7021,6 +7021,17 @@ async function startServer() {
       process.exit(1);
     }
   }
+  // Serve frontend static files in production
+  const frontendDist = resolve(dirname(fileURLToPath(import.meta.url)), "../../frontend/dist");
+  if (existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+    // SPA fallback: serve index.html for non-API routes
+    app.get("*", (_req: Request, res: Response, next: NextFunction) => {
+      if (_req.path.startsWith("/api/")) return next();
+      res.sendFile(resolve(frontendDist, "index.html"));
+    });
+  }
+
   app.listen(port, () => {
     console.log(`GoodJob CRM API listening on http://127.0.0.1:${port}`);
   });
