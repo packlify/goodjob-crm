@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
 import { z } from "zod";
 import { AUTH_COOKIE_NAME, CSRF_COOKIE_NAME, canManageAccount, canManageAccounts, canManageRole, canSeeOwner, canSeePersonalData, canSeeTeam, createCsrfToken, csrfCookieOptions, hashPassword, publicUser, requireAuth, sessionCookieOptions, signToken, verifyPassword } from "./auth.js";
-import { createMysqlStore } from "./mysql-store.js";
+import { createMysqlStore, getConfiguredDatabaseUrl } from "./mysql-store.js";
 import { getStore, setStore } from "./store.js";
 import { LEAD_PROVIDERS, getProvider, providerMeta, type LeadProvider, type LeadQuery, type RawLead } from "./lead-providers.js";
 import { assertPublicHttpUrl, fetchPublicUrl } from "./outbound-security.js";
@@ -7019,7 +7019,7 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
 async function startServer() {
   const port = Number(process.env.PORT || 4188);
   const mysqlRequested = process.env.CRM_STORE === "mysql"
-    || (process.env.CRM_STORE !== "memory" && Boolean(process.env.DATABASE_URL || process.env.MYSQL_URL));
+    || (process.env.CRM_STORE !== "memory" && Boolean(getConfiguredDatabaseUrl()));
   if (mysqlRequested) {
     try {
       const store = await createMysqlStore();

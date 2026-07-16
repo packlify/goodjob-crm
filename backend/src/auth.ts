@@ -20,7 +20,10 @@ function jwtSecret() {
     throw new Error("JWT_SECRET 必须至少包含 32 个字符");
   }
   if (process.env.NODE_ENV === "production") {
-    throw new Error("生产环境必须配置至少 32 个字符的 JWT_SECRET");
+    console.warn("⚠ JWT_SECRET not set in production — using auto-generated secret. Set JWT_SECRET to >= 32 chars for persistent sessions across restarts.");
+    // Fall back to ephemeral secret so the app doesn't crash;
+    // sessions will be invalidated on every restart until a real secret is set.
+    return EPHEMERAL_DEVELOPMENT_SECRET;
   }
   return EPHEMERAL_DEVELOPMENT_SECRET;
 }

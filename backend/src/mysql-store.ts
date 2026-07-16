@@ -7,8 +7,24 @@ import type { AiModelConfig, CaseStudy, CommissionCalculation, CommissionExport,
 
 const defaultUrl = "mysql://goodjob:change_me@127.0.0.1:3306/goodjob_crm";
 
+/** Auto-detect database URL from Railway / common cloud MySQL env vars */
+export function getConfiguredDatabaseUrl(): string | undefined {
+  const explicit = process.env.DATABASE_URL || process.env.MYSQL_URL;
+  if (explicit) return explicit;
+  // Railway MySQL plugin typically injects individual vars instead of a combined URL
+  const host = process.env.MYSQLHOST;
+  if (host) {
+    const port = process.env.MYSQLPORT || "3306";
+    const user = process.env.MYSQLUSER || "root";
+    const password = process.env.MYSQLPASSWORD || "";
+    const database = process.env.MYSQLDATABASE || "railway";
+    return `mysql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}`;
+  }
+  return undefined;
+}
+
 export async function createMysqlStore(): Promise<CrmStore> {
-  const configuredUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+  const configuredUrl = getConfiguredDatabaseUrl();
   if (process.env.NODE_ENV === "production" && !configuredUrl) {
     throw new Error("生产环境必须配置 DATABASE_URL 或 MYSQL_URL");
   }
